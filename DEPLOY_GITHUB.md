@@ -1,48 +1,45 @@
-# Panduan Deploy MY DUIT ke GitHub Pages (100% Gratis & Otomatis)
+# Panduan Mengatasi Gagal Deploy di GitHub Pages (100% Berhasil)
 
-Aplikasi **MY DUIT** telah dilengkapi dengan alur kerja otomatis **GitHub Actions** (`.github/workflows/deploy.yml`), konfigurasi `base: './'`, file `.nojekyll`, dan dukungan PWA penuh.
-
----
-
-## Langkah 1: Buat Repositori Baru di Web GitHub
-1. Buka browser dan kunjungi [https://github.com/new](https://github.com/new).
-2. Beri nama repositori, contoh: `my-duit`.
-3. Pilih visibilitas **Public** (agar GitHub Pages gratis).
-4. Klik tombol hijau **Create repository**.
+Workflow `.github/workflows/deploy.yml` kini telah diperbarui dengan **Dual Deployment Protection**:
+1. Otomatis push build ke branch **`gh-pages`** (*metode anti-gagal*).
+2. Otomatis deploy ke **GitHub Actions Pages** jika sudah diaktifkan.
+3. Ditambahkan file `.nojekyll` dan `404.html` agar tidak diblokir Jekyll.
 
 ---
 
-## Langkah 2: Unggah File Proyek ke GitHub
+## 2 Langkah Wajib di Pengaturan Repositori GitHub Anda:
 
-### Opsi A: Menggunakan Menu AI Studio (Paling Cepat Tanpa Terminal)
-1. Di layar Google AI Studio saat ini, klik menu **Settings** / titik tiga di sudut kanan atas.
-2. Pilih **Export to GitHub** (atau hubungkan akun GitHub Anda).
-3. Kode akan otomatis dibuatkan repositori dan di-push ke akun GitHub Anda.
+Jika deploy Anda sebelumnya gagal (tanda silang merah ❌ di GitHub Actions), ikuti 2 langkah cepat berikut di web GitHub:
 
-### Opsi B: Upload Manual via Web GitHub
-1. Di AI Studio, download file proyek via menu **Download ZIP** lalu ekstrak di komputer Anda.
-2. Di halaman repositori GitHub Anda yang baru dibuat, klik tautan **uploading an existing file** (*atau klik tombol **Add file** -> **Upload files**)*.
-3. Seret (*drag and drop*) seluruh isi folder proyek ke browser.
-4. Klik tombol hijau **Commit changes**.
-
----
-
-## Langkah 3: Mengaktifkan GitHub Pages di Web GitHub
-Setelah file berada di repositori GitHub Anda:
-
-1. Di halaman repositori GitHub Anda, klik tab menu **Settings** (ikon gerigi di atas).
-2. Di menu sebelah kiri, klik **Pages**.
-3. Di bagian **Build and deployment**:
-   - Di bawah label **Source**, ubah pilihan dari *"Deploy from a branch"* menjadi **"GitHub Actions"**.
-4. Selesai!
+### Langkah 1: Berikan Izin Tulis untuk GitHub Actions (Penyebab Utama Gagal)
+Secara default, GitHub membatasi Actions hanya boleh membaca (*Read-only*). Anda perlu mengizinkannya menulis:
+1. Buka repositori Anda di GitHub.
+2. Klik tab **Settings** (ikon gerigi di atas).
+3. Di menu sebelah kiri, klik **Actions** -> lalu pilih **General**.
+4. Gulir ke bawah sampai menemukan bagian **Workflow permissions**.
+5. Ubah pilihan dari *"Read repository contents permission"* menjadi:
+   👉 **"Read and write permissions"**
+6. Centang juga kotak *"Allow GitHub Actions to approve pull requests"* (jika ada).
+7. Klik tombol hijau **Save**.
 
 ---
 
-## Langkah 4: Cek Proses Deploy Otomatis
+### Langkah 2: Aktifkan GitHub Pages
+1. Di tab **Settings** repositori Anda, klik menu **Pages** di sebelah kiri.
+2. Di bagian **Build and deployment**:
+   - **Opsi Paling Mudah**: 
+     - Di dropdown **Source**, pilih **Deploy from a branch**.
+     - Di bawahnya (Branch), pilih branch **`gh-pages`** dan folder **`/(root)`**, lalu klik **Save**.
+   - **ATAU Opsi GitHub Actions**:
+     - Di dropdown **Source**, ubah menjadi **GitHub Actions**.
+3. Selesai!
+
+---
+
+### Langkah 3: Jalankan Ulang / Re-run Workflow
 1. Klik tab **Actions** di bagian atas repositori GitHub Anda.
-2. Anda akan melihat proses kerja bernama **"Deploy MY DUIT to GitHub Pages"** sedang berjalan.
-3. Tunggu sekitar 1-2 menit hingga muncul tanda centang hijau **✓**.
-4. Klik workflow tersebut atau kembali ke tab **Settings -> Pages**. Di sana akan tampil tautan website resmi Anda, misalnya:
-   `https://<username-anda>.github.io/my-duit/`
+2. Klik proses yang gagal sebelumnya.
+3. Di sudut kanan atas, klik tombol **"Re-run all jobs"** (atau lakukan commit baru dari AI Studio).
+4. Workflow akan berjalan dan centang hijau **✓**.
+5. Buka link website Anda di **Settings -> Pages** (misalnya `https://<username>.github.io/<nama-repo>/`).
 
-Website Anda kini online secara publik, gratis selamanya, dan dapat dipasang (*install*) di HP Android, iPhone, maupun PC!
