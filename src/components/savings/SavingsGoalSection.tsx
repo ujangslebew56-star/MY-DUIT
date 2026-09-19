@@ -104,7 +104,7 @@ export const SavingsGoalSection: React.FC = () => {
         setLoading(false);
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'savingsGoals');
+        console.warn('Savings goals snapshot notice:', error);
         setLoading(false);
       }
     );
@@ -127,7 +127,7 @@ export const SavingsGoalSection: React.FC = () => {
         }
       },
       (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'wallets');
+        console.warn('Savings goals wallets notice:', error);
       }
     );
 
