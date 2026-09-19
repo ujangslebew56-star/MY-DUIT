@@ -7,6 +7,7 @@ import {
   createUserWithEmailAndPassword, 
   fbSignOut, 
   updateProfile,
+  sendPasswordResetEmail,
   db,
   doc,
   getDoc,
@@ -26,6 +27,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInEmail: (email: string, pass: string) => Promise<void>;
   signUpEmail: (name: string, email: string, pass: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   updatePrimaryColor: (color: string) => Promise<void>;
   updateThemePreference: (theme: 'light' | 'dark' | 'system') => Promise<void>;
@@ -160,6 +162,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(auth, email.trim());
+    } catch (error: any) {
+      console.error('Reset Password Error:', error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await fbSignOut(auth);
@@ -245,6 +256,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signInWithGoogle,
         signInEmail,
         signUpEmail,
+        resetPassword,
         logout,
         updatePrimaryColor,
         updateThemePreference,

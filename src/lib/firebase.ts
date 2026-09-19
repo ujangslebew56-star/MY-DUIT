@@ -7,6 +7,7 @@ import {
   createUserWithEmailAndPassword, 
   signOut as fbSignOut, 
   updateProfile,
+  sendPasswordResetEmail,
   User 
 } from 'firebase/auth';
 import { 
@@ -126,6 +127,7 @@ export {
   createUserWithEmailAndPassword,
   fbSignOut,
   updateProfile,
+  sendPasswordResetEmail,
   collection,
   doc,
   setDoc,

@@ -1,35 +1,59 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Logo } from '../ui/Logo';
-import { Mail, Lock, User as UserIcon, ArrowRight, Chrome, AlertCircle, ShieldCheck } from 'lucide-react';
+import { 
+  Mail, 
+  Lock, 
+  User as UserIcon, 
+  ArrowRight, 
+  Chrome, 
+  AlertCircle, 
+  ShieldCheck, 
+  Eye, 
+  EyeOff, 
+  CheckCircle2,
+  KeyRound
+} from 'lucide-react';
 
 export const AuthModal: React.FC = () => {
-  const { signInWithGoogle, signInEmail, signUpEmail } = useAuth();
+  const { signInWithGoogle, signInEmail, signUpEmail, resetPassword } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccessMsg(null);
     setLoading(true);
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
     try {
       if (isRegister) {
         if (!name.trim()) throw new Error('Nama lengkap wajib diisi');
-        if (password.length < 6) throw new Error('Password minimal 6 karakter');
-        await signUpEmail(name, email, password);
+        if (cleanPassword.length < 6) throw new Error('Password minimal 6 karakter');
+        await signUpEmail(name.trim(), cleanEmail, cleanPassword);
       } else {
-        await signInEmail(email, password);
+        await signInEmail(cleanEmail, cleanPassword);
       }
     } catch (err: any) {
-      console.error(err);
+      console.error('Auth submit error:', err);
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError('Email atau kata sandi tidak valid.');
+        setError('Email atau kata sandi tidak cocok. Jika Anda belum pernah mendaftar, silakan klik "Daftar gratis" di bawah.');
       } else if (err.code === 'auth/email-already-in-use') {
-        setError('Email ini sudah terdaftar. Silakan login.');
+        setError('Email ini sudah pernah terdaftar. Silakan pilih "Masuk di sini".');
+      } else if (err.code === 'auth/unauthorized-domain') {
+        setError(`Domain (${window.location.hostname}) belum diizinkan di Firebase Console. Tambahkan domain ini di Firebase Console > Authentication > Settings > Authorized domains.`);
+      } else if (err.code === 'auth/operation-not-allowed') {
+        setError('Penyedia login Email belum diaktifkan di Firebase Console. Buka Firebase Console > Authentication > Sign-in method > Aktifkan Email/Password.');
       } else {
         setError(err.message || 'Terjadi kesalahan saat masuk.');
       }
@@ -40,13 +64,41 @@ export const AuthModal: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     setError(null);
+    setSuccessMsg(null);
     setLoading(true);
     try {
       await signInWithGoogle();
     } catch (err: any) {
-      setError(err.message || 'Gagal login menggunakan akun Google');
+      if (err.code === 'auth/unauthorized-domain') {
+        setError(`Domain (${window.location.hostname}) belum diizinkan di Firebase Console. Tambahkan domain ini di Firebase Console > Authentication > Settings > Authorized domains.`);
+      } else {
+        setError(err.message || 'Gagal login menggunakan akun Google');
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError('Silakan isi kolom email di bawah terlebih dahulu untuk mengatur ulang kata sandi.');
+      return;
+    }
+    setError(null);
+    setSuccessMsg(null);
+    setResetting(true);
+    try {
+      await resetPassword(cleanEmail);
+      setSuccessMsg(`Tautan reset kata sandi telah dikirim ke ${cleanEmail}. Silakan periksa kotak masuk atau spam email Anda.`);
+    } catch (err: any) {
+      if (err.code === 'auth/user-not-found') {
+        setError('Email ini belum terdaftar di aplikasi. Silakan buat akun baru.');
+      } else {
+        setError(err.message || 'Gagal mengirim email reset kata sandi.');
+      }
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -68,9 +120,30 @@ export const AuthModal: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-start gap-2.5 text-rose-700 dark:text-rose-300 text-xs">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{error}</span>
+          <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex flex-col gap-2 text-rose-700 dark:text-rose-300 text-xs">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+            {!isRegister && error.includes('belum pernah mendaftar') && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsRegister(true);
+                  setError(null);
+                }}
+                className="self-start text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 underline cursor-pointer pl-6 hover:text-emerald-700"
+              >
+                Klik di sini untuk mendaftar akun sekarang →
+              </button>
+            )}
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 flex items-start gap-2.5 text-emerald-700 dark:text-emerald-300 text-xs">
+            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{successMsg}</span>
           </div>
         )}
 
@@ -134,20 +207,42 @@ export const AuthModal: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Kata Sandi
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Kata Sandi
+              </label>
+              {!isRegister && (
+                <button
+                  type="button"
+                  id="btn-forgot-password"
+                  onClick={handleForgotPassword}
+                  disabled={resetting}
+                  className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1 disabled:opacity-50"
+                >
+                  <KeyRound className="w-3 h-3" />
+                  <span>{resetting ? 'Mengirim...' : 'Lupa sandi?'}</span>
+                </button>
+              )}
+            </div>
             <div className="relative">
               <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 id="input-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-900 dark:text-white"
+                className="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 text-slate-900 dark:text-white"
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-1"
+                title={showPassword ? 'Sembunyikan sandi' : 'Tampilkan sandi'}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
           </div>
 
@@ -170,6 +265,7 @@ export const AuthModal: React.FC = () => {
             onClick={() => {
               setIsRegister(!isRegister);
               setError(null);
+              setSuccessMsg(null);
             }}
             className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
           >
