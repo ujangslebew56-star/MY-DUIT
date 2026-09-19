@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { db, collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Wallet, WalletType } from '../../types';
-import { formatCurrency } from '../../lib/constants';
+import { formatCurrency, formatNumberWithDots, parseNumberFromDots } from '../../lib/constants';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { 
   Wallet as WalletIcon, 
@@ -76,7 +76,7 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
     setEditingWallet(w);
     setName(w.name);
     setType(w.type);
-    setBalance(w.balance.toString());
+    setBalance(formatNumberWithDots(w.balance));
     setAccountNumber(w.accountNumber || '');
     setColor(w.color || '#2563EB');
     setIsModalOpen(true);
@@ -102,7 +102,7 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
     if (!currentUser || !name.trim()) return;
     setSubmitting(true);
     try {
-      const parsedBalance = parseFloat(balance.replace(/[^0-9.-]+/g, '')) || 0;
+      const parsedBalance = parseNumberFromDots(balance);
       if (editingWallet) {
         await updateDoc(doc(db, 'wallets', editingWallet.id), {
           name,
@@ -124,6 +124,10 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
           updatedAt: Date.now()
         });
       }
+      // Reset form state so former numbers leave no trace
+      setName('');
+      setBalance('');
+      setAccountNumber('');
       setIsModalOpen(false);
     } catch (err) {
       console.error('Save wallet error:', err);
@@ -276,17 +280,39 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Saldo Saat Ini (Rp)
-                </label>
-                <input
-                  type="number"
-                  value={balance}
-                  onChange={(e) => setBalance(e.target.value)}
-                  placeholder="0"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white font-mono"
-                  required
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Saldo Saat Ini
+                  </label>
+                  {balance && (
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                      Rp {balance}
+                    </span>
+                  )}
+                </div>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 font-bold font-mono text-xs text-slate-400 pointer-events-none select-none">
+                    Rp
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={balance}
+                    onChange={(e) => setBalance(formatNumberWithDots(e.target.value))}
+                    placeholder="0"
+                    className="w-full pl-10 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white font-mono"
+                    required
+                  />
+                  {balance && (
+                    <button
+                      type="button"
+                      onClick={() => setBalance('')}
+                      className="absolute right-2.5 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>

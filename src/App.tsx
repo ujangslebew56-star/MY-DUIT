@@ -16,7 +16,6 @@ import { ReportsView } from './components/analytics/ReportsView';
 import { AddTransactionModal } from './components/transactions/AddTransactionModal';
 import { ReceiptScannerModal } from './components/ocr/ReceiptScannerModal';
 import { ProfileModal } from './components/auth/ProfileModal';
-import { InstallAppModal } from './components/pwa/InstallAppModal';
 import { OCRScanResult } from './types';
 import { Loader2 } from 'lucide-react';
 
@@ -28,7 +27,6 @@ const MainApp: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isInstallAppOpen, setIsInstallAppOpen] = useState(false);
 
   // Scanned draft pass-through
   const [scannedData, setScannedData] = useState<{ result: OCRScanResult; receiptUrl?: string } | null>(null);
@@ -64,11 +62,10 @@ const MainApp: React.FC = () => {
         activeTab={activeTab}
         onOpenScanner={() => setIsScannerOpen(true)}
         onOpenProfile={() => setIsProfileOpen(true)}
-        onOpenInstallApp={() => setIsInstallAppOpen(true)}
       />
 
       {/* Main View Container */}
-      <main className="flex-1 max-w-md w-full mx-auto px-4 pt-4 pb-24">
+      <main className="flex-1 max-w-md w-full mx-auto px-4 pt-3 pb-24">
         {activeTab === 'dashboard' && (
           <DashboardView
             onOpenAddModal={() => setIsAddModalOpen(true)}
@@ -110,13 +107,6 @@ const MainApp: React.FC = () => {
       <ProfileModal
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
-        onOpenInstallApp={() => setIsInstallAppOpen(true)}
-      />
-
-      {/* Install App / Package Across All Devices Modal */}
-      <InstallAppModal
-        isOpen={isInstallAppOpen}
-        onClose={() => setIsInstallAppOpen(false)}
       />
     </div>
   );

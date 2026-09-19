@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { scanReceiptWithGemini } from '../../lib/ocrService';
 import { OCRScanResult } from '../../types';
-import { formatCurrency } from '../../lib/constants';
+import { formatCurrency, formatNumberWithDots, parseNumberFromDots } from '../../lib/constants';
 import { useTheme } from '../../context/ThemeContext';
 
 interface ReceiptScannerModalProps {
@@ -65,7 +65,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
       const result = await scanReceiptWithGemini(base64Img);
       setScanResult(result);
       setEditMerchant(result.merchant || 'Struk Belanja');
-      setEditTotal(result.total.toString());
+      setEditTotal(formatNumberWithDots(result.total));
       setEditDate(result.date || new Date().toISOString().split('T')[0]);
       setEditCategory(result.suggestedCategory || 'Belanja & Groceries');
     } catch (err) {
@@ -77,7 +77,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
   const handleUseResult = () => {
     if (!scanResult) return;
-    const parsedTotal = parseFloat(editTotal.replace(/[^0-9.-]+/g, '')) || scanResult.total;
+    const parsedTotal = parseNumberFromDots(editTotal) || scanResult.total;
     const finalResult: OCRScanResult = {
       ...scanResult,
       merchant: editMerchant,
@@ -265,9 +265,10 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                           Total Pembayaran (Rp):
                         </label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={editTotal}
-                          onChange={(e) => setEditTotal(e.target.value)}
+                          onChange={(e) => setEditTotal(formatNumberWithDots(e.target.value))}
                           className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold font-mono text-slate-900 dark:text-white"
                         />
                       </div>

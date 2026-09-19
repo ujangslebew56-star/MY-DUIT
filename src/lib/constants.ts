@@ -74,12 +74,44 @@ export const formatCurrency = (amount: number, currency: string = 'IDR'): string
   }).format(amount);
 };
 
+/**
+ * Format a number or digits-only string with Indonesian thousand separator dots (.)
+ * Example: "1000000" -> "1.000.000"
+ */
+export const formatNumberWithDots = (val: string | number): string => {
+  if (val === undefined || val === null || val === '') return '';
+  const clean = val.toString().replace(/\D/g, '');
+  if (!clean) return '';
+  return new Intl.NumberFormat('id-ID').format(parseInt(clean, 10));
+};
+
+/**
+ * Extract pure integer from a string formatted with dots
+ * Example: "1.000.000" -> 1000000
+ */
+export const parseNumberFromDots = (val: string | number): number => {
+  if (val === undefined || val === null || val === '') return 0;
+  const clean = val.toString().replace(/\D/g, '');
+  return clean ? parseInt(clean, 10) : 0;
+};
+
 export const formatDateIndo = (dateStr: string): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'short',
+    year: 'numeric',
+  }).format(date);
+};
+
+export const formatFullDateIndo = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
     year: 'numeric',
   }).format(date);
 };

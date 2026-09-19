@@ -9,13 +9,12 @@ import {
   addDoc, 
   updateDoc, 
   doc, 
-  getDoc,
   handleFirestoreError,
   OperationType 
 } from '../../lib/firebase';
 import { Wallet, Category, TransactionType, OCRScanResult } from '../../types';
-import { formatCurrency } from '../../lib/constants';
-import { X, ArrowDownRight, ArrowUpRight, ArrowLeftRight, Calendar, Tag, Wallet as WalletIcon, Sparkles } from 'lucide-react';
+import { formatCurrency, formatNumberWithDots, parseNumberFromDots } from '../../lib/constants';
+import { X, ArrowDownRight, ArrowUpRight, ArrowLeftRight, Sparkles } from 'lucide-react';
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -44,15 +43,28 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Sync with initialScanData if opened via Smart OCR Scanner
+  // Clean reset form state so no trace is left
+  const resetForm = () => {
+    setAmount('');
+    setNote('');
+    setDate(new Date().toISOString().split('T')[0]);
+    setType('expense');
+  };
+
+  // Sync with initialScanData or reset cleanly on modal open
   useEffect(() => {
-    if (initialScanData && initialScanData.result) {
-      setType('expense');
-      setAmount(initialScanData.result.total.toString());
-      setDate(initialScanData.result.date || new Date().toISOString().split('T')[0]);
-      setNote(initialScanData.result.merchant ? `Belanja di ${initialScanData.result.merchant}` : 'Hasil Scan Struk AI');
+    if (isOpen) {
+      if (initialScanData && initialScanData.result) {
+        setType('expense');
+        setAmount(formatNumberWithDots(initialScanData.result.total));
+        setDate(initialScanData.result.date || new Date().toISOString().split('T')[0]);
+        setNote(initialScanData.result.merchant ? `Belanja di ${initialScanData.result.merchant}` : 'Hasil Scan Struk AI');
+      } else {
+        // Completely reset on fresh opening so former numbers don't linger
+        resetForm();
+      }
     }
-  }, [initialScanData]);
+  }, [isOpen, initialScanData]);
 
   // Load wallets & categories
   useEffect(() => {
@@ -105,11 +117,21 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
   const filteredCategories = categories.filter((c) => c.type === (type === 'transfer' ? 'expense' : type));
 
+  const handleClose = () => {
+    resetForm();
+    onClose();
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatNumberWithDots(e.target.value);
+    setAmount(formatted);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) return;
 
-    const numAmount = parseFloat(amount.replace(/[^0-9.-]+/g, ''));
+    const numAmount = parseNumberFromDots(amount);
     if (!numAmount || numAmount <= 0) {
       alert('Masukkan nominal transaksi yang valid');
       return;
@@ -193,6 +215,8 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         });
       }
 
+      // Clean reset after saving so former data leaves no trace
+      resetForm();
       onSuccess && onSuccess();
       onClose();
     } catch (err) {
@@ -204,22 +228,22 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">Catat Transaksi</h3>
             {initialScanData && (
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold flex items-center gap-1">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1 border border-emerald-500/20">
                 <Sparkles className="w-3 h-3" /> Auto Draft OCR
               </span>
             )}
           </div>
           <button
             type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            onClick={handleClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -228,13 +252,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         {/* Form Content */}
         <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
           {/* Type Selector Tabs */}
-          <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-2xl">
+          <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100/80 dark:bg-slate-800/60 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
             <button
               type="button"
               onClick={() => setType('expense')}
               className={`py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 type === 'expense'
-                  ? 'bg-rose-500 text-white shadow-sm'
+                  ? 'bg-rose-500 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -246,7 +270,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               onClick={() => setType('income')}
               className={`py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 type === 'income'
-                  ? 'bg-emerald-600 text-white shadow-sm'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -258,7 +282,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               onClick={() => setType('transfer')}
               className={`py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 type === 'transfer'
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-blue-600 text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -267,24 +291,59 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             </button>
           </div>
 
-          {/* Amount Input */}
+          {/* Amount Input with Auto Dots & Clean Minimalist Styling */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Nominal (Rp)
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Nominal Transaksi
+              </label>
+              {amount && (
+                <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                  Rp {amount}
+                </span>
+              )}
+            </div>
+            <div className="relative flex items-center">
+              <span className="absolute left-3.5 font-bold font-mono text-sm text-slate-400 dark:text-slate-500 pointer-events-none select-none">
                 Rp
               </span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={handleAmountChange}
                 placeholder="0"
                 autoFocus
-                className="w-full pl-10 pr-3.5 py-3 text-lg font-bold font-mono bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
+                className="w-full pl-11 pr-9 py-3 text-xl font-bold font-mono tracking-tight bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/80 text-slate-900 dark:text-white transition-all shadow-2xs"
                 required
               />
+              {amount && (
+                <button
+                  type="button"
+                  onClick={() => setAmount('')}
+                  className="absolute right-3 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                  title="Hapus nominal"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Quick Nominal Chips */}
+            <div className="flex items-center gap-1.5 mt-2 overflow-x-auto pb-1 scrollbar-none">
+              {[10000, 25000, 50000, 100000, 200000, 500000].map((inc) => (
+                <button
+                  key={inc}
+                  type="button"
+                  onClick={() => {
+                    const current = parseNumberFromDots(amount);
+                    setAmount(formatNumberWithDots(current + inc));
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-mono font-medium rounded-lg border border-slate-200/90 dark:border-slate-700/80 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors shrink-0 cursor-pointer shadow-2xs"
+                >
+                  +{formatNumberWithDots(inc)}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -382,15 +441,15 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           <div className="pt-2 flex gap-2">
             <button
               type="button"
-              onClick={onClose}
-              className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+              onClick={handleClose}
+              className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/20 cursor-pointer"
+              className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-xs hover:shadow-sm transition-all cursor-pointer disabled:opacity-50"
             >
               {submitting ? 'Menyimpan...' : 'Simpan Transaksi'}
             </button>
@@ -400,3 +459,4 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     </div>
   );
 };
+

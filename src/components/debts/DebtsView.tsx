@@ -14,7 +14,7 @@ import {
   OperationType
 } from '../../lib/firebase';
 import { Debt, DebtType, DebtStatus, Wallet } from '../../types';
-import { formatCurrency, formatDateIndo } from '../../lib/constants';
+import { formatCurrency, formatDateIndo, formatNumberWithDots, parseNumberFromDots } from '../../lib/constants';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { 
   HandCoins, 
@@ -111,7 +111,7 @@ export const DebtsView: React.FC = () => {
   const handleAddDebt = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser || !personName.trim()) return;
-    const numAmount = parseFloat(amount.replace(/[^0-9.-]+/g, '')) || 0;
+    const numAmount = parseNumberFromDots(amount);
     if (numAmount <= 0) return;
 
     setSubmitting(true);
@@ -143,13 +143,13 @@ export const DebtsView: React.FC = () => {
 
   const handleOpenPay = (d: Debt) => {
     setPayingDebt(d);
-    setPayAmount(d.remainingAmount.toString());
+    setPayAmount(formatNumberWithDots(d.remainingAmount));
   };
 
   const handleConfirmPay = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payingDebt || !currentUser) return;
-    const payNum = parseFloat(payAmount.replace(/[^0-9.-]+/g, '')) || 0;
+    const payNum = parseNumberFromDots(payAmount);
     if (payNum <= 0) return;
 
     const targetWallet = wallets.find((w) => w.id === payWalletId);
@@ -213,6 +213,7 @@ export const DebtsView: React.FC = () => {
         confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
       }
 
+      setPayAmount('');
       setPayingDebt(null);
     } catch (err) {
       console.error('Pay debt error:', err);
@@ -471,17 +472,39 @@ export const DebtsView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Nominal (Rp)
-                </label>
-                <input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white"
-                  required
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Nominal (Rp)
+                  </label>
+                  {amount && (
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                      Rp {amount}
+                    </span>
+                  )}
+                </div>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 font-bold font-mono text-xs text-slate-400 pointer-events-none select-none">
+                    Rp
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={amount}
+                    onChange={(e) => setAmount(formatNumberWithDots(e.target.value))}
+                    placeholder="0"
+                    className="w-full pl-10 pr-8 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white"
+                    required
+                  />
+                  {amount && (
+                    <button
+                      type="button"
+                      onClick={() => setAmount('')}
+                      className="absolute right-2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -557,17 +580,38 @@ export const DebtsView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Nominal Pembayaran (Rp)
-                </label>
-                <input
-                  type="number"
-                  value={payAmount}
-                  onChange={(e) => setPayAmount(e.target.value)}
-                  max={payingDebt.remainingAmount}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white"
-                  required
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Nominal Pembayaran (Rp)
+                  </label>
+                  {payAmount && (
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
+                      Rp {payAmount}
+                    </span>
+                  )}
+                </div>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3 font-bold font-mono text-xs text-slate-400 pointer-events-none select-none">
+                    Rp
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(formatNumberWithDots(e.target.value))}
+                    className="w-full pl-10 pr-8 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-900 dark:text-white"
+                    required
+                  />
+                  {payAmount && (
+                    <button
+                      type="button"
+                      onClick={() => setPayAmount('')}
+                      className="absolute right-2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
