@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { db, collection, query, where, onSnapshot, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Wallet, Transaction } from '../../types';
 import { formatCurrency, formatDateIndo, getCategoryEmoji, getWalletTypeEmoji } from '../../lib/constants';
@@ -11,21 +12,94 @@ import {
   Plus, 
   Receipt, 
   ChevronRight, 
+  ChevronDown,
   Palette,
   Table as TableIcon,
   LayoutList,
   Check
 } from 'lucide-react';
 
-export const TABLE_COLOR_OPTIONS = [
-  { id: 'emerald', name: 'Emerald', hex: '#10B981', emoji: '🌿' },
-  { id: 'blue', name: 'Ocean', hex: '#3B82F6', emoji: '🌊' },
-  { id: 'purple', name: 'Violet', hex: '#8B5CF6', emoji: '🍇' },
-  { id: 'amber', name: 'Amber', hex: '#F59E0B', emoji: '🍊' },
-  { id: 'rose', name: 'Rose', hex: '#EC4899', emoji: '🌹' },
-  { id: 'cyan', name: 'Cyan', hex: '#06B6D4', emoji: '🩵' },
-  { id: 'slate', name: 'Slate', hex: '#475569', emoji: '🖤' },
+export const DASHBOARD_THEMES = [
+  { 
+    id: 'emerald', 
+    name: 'Emerald', 
+    hex: '#10B981', 
+    emoji: '🌿',
+    gradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.5) 0%, #064e3b 45%, #022c22 100%)',
+    glow: '#10B981',
+    border: 'rgba(16, 185, 129, 0.5)',
+    badgeBg: 'rgba(16, 185, 129, 0.25)',
+    badgeText: '#6ee7b7'
+  },
+  { 
+    id: 'blue', 
+    name: 'Ocean', 
+    hex: '#3B82F6', 
+    emoji: '🌊',
+    gradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.5) 0%, #1e3a8a 45%, #0f172a 100%)',
+    glow: '#3B82F6',
+    border: 'rgba(59, 130, 246, 0.5)',
+    badgeBg: 'rgba(59, 130, 246, 0.25)',
+    badgeText: '#93c5fd'
+  },
+  { 
+    id: 'purple', 
+    name: 'Violet', 
+    hex: '#8B5CF6', 
+    emoji: '🍇',
+    gradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.5) 0%, #4c1d95 45%, #1e1b4b 100%)',
+    glow: '#8B5CF6',
+    border: 'rgba(139, 92, 246, 0.5)',
+    badgeBg: 'rgba(139, 92, 246, 0.25)',
+    badgeText: '#c4b5fd'
+  },
+  { 
+    id: 'amber', 
+    name: 'Amber', 
+    hex: '#F59E0B', 
+    emoji: '🍊',
+    gradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.5) 0%, #78350f 45%, #1c1917 100%)',
+    glow: '#F59E0B',
+    border: 'rgba(245, 158, 11, 0.5)',
+    badgeBg: 'rgba(245, 158, 11, 0.25)',
+    badgeText: '#fde68a'
+  },
+  { 
+    id: 'rose', 
+    name: 'Rose', 
+    hex: '#EC4899', 
+    emoji: '🌹',
+    gradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.5) 0%, #831843 45%, #1f1724 100%)',
+    glow: '#EC4899',
+    border: 'rgba(236, 72, 153, 0.5)',
+    badgeBg: 'rgba(236, 72, 153, 0.25)',
+    badgeText: '#fbcfe8'
+  },
+  { 
+    id: 'cyan', 
+    name: 'Cyan', 
+    hex: '#06B6D4', 
+    emoji: '🩵',
+    gradient: 'linear-gradient(135deg, rgba(6, 182, 212, 0.5) 0%, #164e63 45%, #082f49 100%)',
+    glow: '#06B6D4',
+    border: 'rgba(6, 182, 212, 0.5)',
+    badgeBg: 'rgba(6, 182, 212, 0.25)',
+    badgeText: '#a5f3fc'
+  },
+  { 
+    id: 'slate', 
+    name: 'Slate', 
+    hex: '#475569', 
+    emoji: '🖤',
+    gradient: 'linear-gradient(135deg, rgba(71, 85, 105, 0.6) 0%, #1e293b 45%, #0f172a 100%)',
+    glow: '#64748b',
+    border: 'rgba(100, 116, 139, 0.5)',
+    badgeBg: 'rgba(100, 116, 139, 0.25)',
+    badgeText: '#cbd5e1'
+  },
 ];
+
+export const TABLE_COLOR_OPTIONS = DASHBOARD_THEMES;
 
 interface DashboardViewProps {
   onOpenAddModal: () => void;
@@ -39,6 +113,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onViewAllTransactions,
 }) => {
   const { currentUser, userProfile } = useAuth();
+  const { primaryColor, setPrimaryColor } = useTheme();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,16 +124,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Dashboard Table Customization
   const [tableColor, setTableColor] = useState<string>(() => {
-    return localStorage.getItem('myduit_dash_table_color') || '#10B981';
+    return localStorage.getItem('myduit_dash_table_color') || primaryColor || '#10B981';
   });
   const [tableLayout, setTableLayout] = useState<'table' | 'cards'>(() => {
     return (localStorage.getItem('myduit_dash_table_layout') as 'table' | 'cards') || 'table';
   });
   const [showColorPicker, setShowColorPicker] = useState(false);
 
+  const activeTheme = DASHBOARD_THEMES.find(
+    (t) => t.hex.toLowerCase() === tableColor.toLowerCase()
+  ) || DASHBOARD_THEMES[0];
+
   const handleSelectColor = (hex: string) => {
     setTableColor(hex);
     localStorage.setItem('myduit_dash_table_color', hex);
+    setPrimaryColor(hex);
   };
 
   const handleSelectLayout = (layout: 'table' | 'cards') => {
@@ -130,51 +210,121 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div className="space-y-5 pb-6">
-      {/* Welcome & Balance Hero Card */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-tr from-slate-900 via-slate-800 to-emerald-950 text-white p-5 sm:p-6 shadow-xl shadow-slate-950/10 border border-slate-800">
-        {/* Subtle decorative circles */}
-        <div className="absolute -top-12 -right-12 w-44 h-44 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -left-12 w-44 h-44 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
+      {/* Welcome & Balance Hero Card with Dynamic Theme Palette */}
+      <div 
+        className="relative overflow-hidden rounded-3xl text-white p-5 sm:p-6 shadow-xl border transition-all duration-300"
+        style={{
+          background: activeTheme.gradient,
+          borderColor: activeTheme.border,
+          boxShadow: `0 16px 36px -10px ${activeTheme.hex}45`,
+        }}
+      >
+        {/* Dynamic glowing ambient orbs */}
+        <div 
+          className="absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none transition-colors duration-500" 
+          style={{ backgroundColor: `${activeTheme.glow}40` }}
+        />
+        <div 
+          className="absolute -bottom-12 -left-12 w-44 h-44 rounded-full blur-2xl pointer-events-none transition-colors duration-500" 
+          style={{ backgroundColor: `${activeTheme.glow}30` }}
+        />
 
         <div className="relative z-10 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div>
-              <span className="text-xs text-slate-400 font-medium">
+              <span className="text-xs text-slate-300 font-medium">
                 Halo, {userProfile?.displayName || currentUser?.displayName || 'Sahabat'} 👋
               </span>
-              <h1 className="text-xs font-semibold text-slate-300 uppercase tracking-wider block mt-0.5 flex items-center gap-1.5">
+              <h1 
+                className="text-xs font-bold uppercase tracking-wider block mt-0.5 flex items-center gap-1.5"
+                style={{ color: activeTheme.badgeText }}
+              >
                 <span>💰</span>
                 <span>Total Akumulasi Saldo</span>
               </h1>
             </div>
-            <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold tracking-wide border border-emerald-500/30 flex items-center gap-1">
-              <span>⚡</span>
-              <span>Cloud Sync Aktif</span>
-            </span>
+
+            {/* Prominent Quick Theme Color Switcher Button */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                id="btn-switch-hero-theme"
+                onClick={() => setShowColorPicker(!showColorPicker)}
+                className="px-2.5 py-1 rounded-full text-[11px] font-bold border flex items-center gap-1 transition-all shadow-xs cursor-pointer active:scale-95"
+                style={{
+                  backgroundColor: activeTheme.badgeBg,
+                  borderColor: activeTheme.border,
+                  color: '#ffffff',
+                }}
+                title="Ganti warna tema dashboard & total saldo"
+              >
+                <span>🎨</span>
+                <span className="font-semibold">{activeTheme.emoji} {activeTheme.name}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${showColorPicker ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
           </div>
 
-          <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-white">
+          <div className="text-3xl sm:text-4xl font-black font-mono tracking-tight text-white drop-shadow-xs">
             {formatCurrency(totalAccumulatedBalance)}
           </div>
 
+          {/* Collapsible Color Theme Palette Selector */}
+          {showColorPicker && (
+            <div className="p-3 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 space-y-2 animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between text-[11px] font-semibold text-white/90">
+                <span className="flex items-center gap-1.5">
+                  <span>🎨</span>
+                  <span>Pilih Warna Tema Dashboard & Saldo:</span>
+                </span>
+                <span className="text-[10px] text-white/60">7 Pilihan</span>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {DASHBOARD_THEMES.map((themeItem) => {
+                  const isSelected = activeTheme.id === themeItem.id;
+                  return (
+                    <button
+                      key={themeItem.id}
+                      type="button"
+                      onClick={() => handleSelectColor(themeItem.hex)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                        isSelected
+                          ? 'ring-2 ring-white shadow-md scale-105 bg-white/20'
+                          : 'bg-black/30 hover:bg-white/10'
+                      }`}
+                      style={{
+                        borderColor: themeItem.hex,
+                        color: isSelected ? '#ffffff' : themeItem.badgeText,
+                      }}
+                    >
+                      <span>{themeItem.emoji}</span>
+                      <span>{themeItem.name}</span>
+                      {isSelected && <Check className="w-3 h-3 text-white ml-0.5" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Monthly In & Out Pills */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
-            <div className="p-2.5 rounded-2xl bg-white/5 backdrop-blur-xs border border-white/5">
-              <div className="flex items-center gap-1.5 text-emerald-400 text-[11px] font-semibold mb-0.5">
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/10">
+            <div className="p-2.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/10">
+              <div className="flex items-center gap-1.5 text-emerald-300 text-[11px] font-bold mb-0.5">
                 <ArrowUpRight className="w-3.5 h-3.5" />
                 <span>📈 Pemasukan Bulan Ini</span>
               </div>
-              <div className="font-mono font-bold text-sm text-slate-100">
+              <div className="font-mono font-bold text-sm text-white">
                 {formatCurrency(thisMonthIncome)}
               </div>
             </div>
 
-            <div className="p-2.5 rounded-2xl bg-white/5 backdrop-blur-xs border border-white/5">
-              <div className="flex items-center gap-1.5 text-rose-400 text-[11px] font-semibold mb-0.5">
+            <div className="p-2.5 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/10">
+              <div className="flex items-center gap-1.5 text-rose-300 text-[11px] font-bold mb-0.5">
                 <ArrowDownRight className="w-3.5 h-3.5" />
                 <span>📉 Pengeluaran Bulan Ini</span>
               </div>
-              <div className="font-mono font-bold text-sm text-slate-100">
+              <div className="font-mono font-bold text-sm text-white">
                 {formatCurrency(thisMonthExpense)}
               </div>
             </div>
