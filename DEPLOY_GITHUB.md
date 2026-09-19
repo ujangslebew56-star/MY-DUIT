@@ -39,7 +39,18 @@ Secara default, GitHub membatasi Actions hanya boleh membaca (*Read-only*). Anda
 ### Langkah 3: Jalankan Ulang / Re-run Workflow
 1. Klik tab **Actions** di bagian atas repositori GitHub Anda.
 2. Klik proses yang gagal sebelumnya.
-3. Di sudut kanan atas, klik tombol **"Re-run all jobs"** (atau lakukan commit baru dari AI Studio).
+3. Di sudut kanan atas, klik tombol **"Re-run all jobs"** (atau lakukan commit/ekspor baru dari AI Studio).
 4. Workflow akan berjalan dan centang hijau **✓**.
 5. Buka link website Anda di **Settings -> Pages** (misalnya `https://<username>.github.io/<nama-repo>/`).
+
+---
+
+## Catatan Khusus Pengguna Vercel (PENTING)
+Jika repositori GitHub Anda terhubung ke **Vercel**:
+1. Buka dashboard Vercel Anda ➔ pilih proyek Anda ➔ klik tab **Settings** ➔ **Git**.
+2. Pastikan **Production Branch** diatur ke branch **`main`** (BUKAN `gh-pages`).
+   - Branch `main` adalah sumber kode utama lengkap dengan `package.json`.
+   - Branch `gh-pages` adalah output statis khusus GitHub Pages.
+3. Kami juga telah menambahkan injeksi `package.json` dan `vercel.json` otomatis ke branch `gh-pages` agar jika Vercel tetap memicu build pada branch `gh-pages`, prosesnya tidak akan lagi mengalami error `ENOENT package.json`.
+
 
