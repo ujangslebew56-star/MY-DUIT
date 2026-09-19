@@ -16,7 +16,8 @@ import {
   Type, 
   Pipette,
   Download,
-  Smartphone
+  Smartphone,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface ProfileModalProps {
@@ -396,6 +397,62 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose, onO
               </span>
             </button>
           )}
+
+          {/* Logo PNG Asset Download Section */}
+          <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 space-y-2.5">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                Aset Logo Aplikasi (PNG Transparan)
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Format PNG berkualitas tinggi (1024x1024) dengan latar belakang transparan siap pakai:
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <a
+                href="/logo.png"
+                download="MY-DUIT-App-Icon.png"
+                className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-500 text-center transition-colors group cursor-pointer"
+              >
+                <div className="w-8 h-8 mx-auto mb-1 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+                  <img src="/logo.png" alt="App Icon" className="w-7 h-7 object-contain" />
+                </div>
+                <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 block truncate group-hover:text-emerald-500">
+                  Icon Badge PNG
+                </span>
+                <span className="text-[9px] text-slate-400 block">1024x1024</span>
+              </a>
+
+              <a
+                href="/logo-mark.png"
+                download="MY-DUIT-Monogram.png"
+                className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-500 text-center transition-colors group cursor-pointer"
+              >
+                <div className="w-8 h-8 mx-auto mb-1 rounded-md overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
+                  <img src="/logo-mark.png" alt="Monogram" className="w-7 h-7 object-contain" />
+                </div>
+                <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 block truncate group-hover:text-emerald-500">
+                  Monogram M-D
+                </span>
+                <span className="text-[9px] text-slate-400 block">Transparan</span>
+              </a>
+
+              <a
+                href="/logo-full.png"
+                download="MY-DUIT-Full-Logo.png"
+                className="col-span-2 p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-emerald-500 flex items-center justify-between px-3 transition-colors group cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <img src="/logo-full.png" alt="Full Logo" className="h-5 object-contain" />
+                  <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 group-hover:text-emerald-500">
+                    Logo Horizontal Lengkap
+                  </span>
+                </div>
+                <Download className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-500" />
+              </a>
+            </div>
+          </div>
 
           {/* Logout button */}
           <button
