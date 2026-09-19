@@ -26,8 +26,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800 shadow-lg">
-      <div className="max-w-md mx-auto px-3 py-2 flex items-center justify-around relative">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800 shadow-lg pb-[env(safe-area-inset-bottom,0px)]">
+      <div className="max-w-md mx-auto px-3 py-1.5 sm:py-2 flex items-center justify-around relative">
         {/* Left 2 items */}
         {navItems.slice(0, 2).map((item) => {
           const Icon = item.icon;

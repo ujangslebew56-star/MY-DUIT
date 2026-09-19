@@ -93,3 +93,17 @@ export interface OCRScanResult {
   items?: Array<{ name: string; price: number }>;
   rawText?: string;
 }
+
+export interface SavingsGoal {
+  id: string;
+  userId: string;
+  title: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline?: string; // YYYY-MM-DD
+  emoji: string;
+  color: string;
+  note?: string;
+  createdAt: number;
+  updatedAt: number;
+}

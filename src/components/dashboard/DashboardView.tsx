@@ -5,6 +5,7 @@ import { db, collection, query, where, onSnapshot, handleFirestoreError, Operati
 import { Wallet, Transaction } from '../../types';
 import { formatCurrency, formatDateIndo, getCategoryEmoji, getWalletTypeEmoji } from '../../lib/constants';
 import { WalletsSection } from '../wallets/WalletsSection';
+import { SavingsGoalSection } from '../savings/SavingsGoalSection';
 import { 
   ArrowDownRight, 
   ArrowUpRight, 
@@ -370,6 +371,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </span>
         </button>
       </div>
+
+      {/* Target Tabungan & Impian dengan Progress Bar */}
+      <SavingsGoalSection />
 
       {/* Customizable Wallets Carousel */}
       <WalletsSection />

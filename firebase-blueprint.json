@@ -88,6 +88,24 @@
         "createdAt": { "type": "number" }
       },
       "required": ["name", "type", "icon", "color"]
+    },
+    "SavingsGoal": {
+      "title": "SavingsGoal",
+      "description": "User savings target and progress",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "targetAmount": { "type": "number" },
+        "currentAmount": { "type": "number" },
+        "deadline": { "type": "string" },
+        "emoji": { "type": "string" },
+        "color": { "type": "string" },
+        "note": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["userId", "title", "targetAmount", "currentAmount", "emoji", "color", "createdAt", "updatedAt"]
     }
   },
   "firestore": {
@@ -110,6 +128,10 @@
     "/categories/{categoryId}": {
       "schema": "Category",
       "description": "Transaction categories"
+    },
+    "/savingsGoals/{goalId}": {
+      "schema": "SavingsGoal",
+      "description": "User savings targets and goals"
     }
   }
 }

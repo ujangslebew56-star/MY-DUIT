@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Logo } from '../ui/Logo';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Sun, Moon, Sparkles } from 'lucide-react';
+import { Sun, Moon, Sparkles, RotateCw } from 'lucide-react';
 import { TabType } from './BottomNav';
 
 interface HeaderProps {
@@ -17,19 +17,38 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { userProfile, currentUser } = useAuth();
   const { theme, toggleTheme, primaryColor } = useTheme();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleHardRefresh = () => {
+    setIsRefreshing(true);
+    try {
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          for (const name of names) {
+            caches.delete(name);
+          }
+        });
+      }
+    } catch {
+      // Ignore cache API errors
+    }
+    setTimeout(() => {
+      window.location.reload();
+    }, 250);
+  };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors">
+    <header className="sticky top-0 z-30 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors">
       <div className="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
         <Logo size="sm" />
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Smart Scan Quick Launcher */}
           <button
             type="button"
             id="btn-header-scan-ocr"
             onClick={onOpenScanner}
-            className="flex items-center gap-1.5 py-1.5 px-3 rounded-full text-xs font-semibold border transition-all active:scale-95 cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-semibold border transition-all active:scale-95 cursor-pointer shadow-2xs"
             style={{
               backgroundColor: `${primaryColor}12`,
               color: primaryColor,
@@ -39,6 +58,18 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5" style={{ color: primaryColor }} />
             <span className="hidden xs:inline text-[11px] font-medium tracking-tight">Scan AI</span>
+          </button>
+
+          {/* Quick Refresh / Cache Buster Button */}
+          <button
+            type="button"
+            id="btn-header-hard-refresh"
+            onClick={handleHardRefresh}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer active:scale-90"
+            title="Segarkan Tampilan & Bersihkan Cache Versi Terbaru"
+            aria-label="Refresh and Clear Cache"
+          >
+            <RotateCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-500' : ''}`} />
           </button>
 
           {/* Theme Toggle Button */}
