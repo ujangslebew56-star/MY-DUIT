@@ -241,7 +241,10 @@ export const DebtsView: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100">Hutang & Piutang</h1>
+          <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+            <span>🤝</span>
+            <span>Hutang & Piutang</span>
+          </h1>
           <p className="text-xs text-slate-400">Pantau pinjaman & tagihan yang harus dibayar/diterima</p>
         </div>
         <button
@@ -257,8 +260,8 @@ export const DebtsView: React.FC = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3">
         <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-          <div className="flex items-center gap-2 text-rose-500 text-xs font-semibold mb-1">
-            <ArrowUpRight className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 text-rose-500 text-xs font-semibold mb-1">
+            <span>📤</span>
             <span>Total Hutang Saya</span>
           </div>
           <div className="text-base font-bold font-mono text-slate-900 dark:text-white">
@@ -268,8 +271,8 @@ export const DebtsView: React.FC = () => {
         </div>
 
         <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-          <div className="flex items-center gap-2 text-emerald-500 text-xs font-semibold mb-1">
-            <ArrowDownLeft className="w-4 h-4" />
+          <div className="flex items-center gap-1.5 text-emerald-500 text-xs font-semibold mb-1">
+            <span>📥</span>
             <span>Total Piutang Saya</span>
           </div>
           <div className="text-base font-bold font-mono text-slate-900 dark:text-white">
@@ -282,20 +285,21 @@ export const DebtsView: React.FC = () => {
       {/* Filter Tabs */}
       <div className="flex gap-2">
         {[
-          { id: 'all', label: 'Semua' },
-          { id: 'receivable', label: 'Piutang (Dipinjamkan)' },
-          { id: 'debt', label: 'Hutang (Dipinjam)' },
+          { id: 'all', label: 'Semua', emoji: '✨' },
+          { id: 'receivable', label: 'Piutang', emoji: '📥' },
+          { id: 'debt', label: 'Hutang', emoji: '📤' },
         ].map((t) => (
           <button
             key={t.id}
             onClick={() => setActiveTab(t.id as any)}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
               activeTab === t.id
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
             }`}
           >
-            {t.label}
+            <span>{t.emoji}</span>
+            <span>{t.label}</span>
           </button>
         ))}
       </div>

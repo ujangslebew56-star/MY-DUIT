@@ -19,10 +19,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const { primaryColor } = useTheme();
 
   const navItems = [
-    { id: 'dashboard' as TabType, label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'history' as TabType, label: 'Riwayat', icon: History },
-    { id: 'debts' as TabType, label: 'Hutang', icon: HandCoins },
-    { id: 'reports' as TabType, label: 'Laporan', icon: FileText },
+    { id: 'dashboard' as TabType, label: 'Dashboard', emoji: '📊', icon: LayoutDashboard },
+    { id: 'history' as TabType, label: 'Riwayat', emoji: '📜', icon: History },
+    { id: 'debts' as TabType, label: 'Hutang', emoji: '🤝', icon: HandCoins },
+    { id: 'reports' as TabType, label: 'Laporan', emoji: '📈', icon: FileText },
   ];
 
   return (
@@ -52,11 +52,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 />
               </div>
               <span
-                className={`text-[11px] mt-0.5 tracking-tight ${
+                className={`text-[11px] mt-0.5 tracking-tight flex items-center gap-0.5 ${
                   isActive ? 'font-bold' : 'text-slate-500 dark:text-slate-400'
                 }`}
               >
-                {item.label}
+                <span>{item.emoji}</span>
+                <span>{item.label}</span>
               </span>
             </button>
           );
@@ -77,7 +78,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           >
             <Plus className="w-7 h-7 stroke-[2.5]" />
           </button>
-          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">Tambah</span>
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">➕ Catat</span>
         </div>
 
         {/* Right 2 items */}
@@ -104,11 +105,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 />
               </div>
               <span
-                className={`text-[11px] mt-0.5 tracking-tight ${
+                className={`text-[11px] mt-0.5 tracking-tight flex items-center gap-0.5 ${
                   isActive ? 'font-bold' : 'text-slate-500 dark:text-slate-400'
                 }`}
               >
-                {item.label}
+                <span>{item.emoji}</span>
+                <span>{item.label}</span>
               </span>
             </button>
           );

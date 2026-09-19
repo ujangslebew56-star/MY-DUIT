@@ -115,3 +115,39 @@ export const formatFullDateIndo = (dateStr: string): string => {
     year: 'numeric',
   }).format(date);
 };
+
+export const getCategoryEmoji = (categoryName?: string, type?: string): string => {
+  if (!categoryName) return type === 'income' ? '💵' : '💸';
+  const name = categoryName.toLowerCase();
+  if (name.includes('makan') || name.includes('minum') || name.includes('kuliner') || name.includes('kopi') || name.includes('food')) return '🍔';
+  if (name.includes('belanja') || name.includes('groceries') || name.includes('pasar') || name.includes('mall') || name.includes('supermarket')) return '🛍️';
+  if (name.includes('trans') || name.includes('bensin') || name.includes('ojek') || name.includes('gojek') || name.includes('grab') || name.includes('parkir') || name.includes('tol') || name.includes('kereta')) return '🚗';
+  if (name.includes('tagih') || name.includes('listrik') || name.includes('air') || name.includes('wifi') || name.includes('internet') || name.includes('pulsa') || name.includes('util')) return '💡';
+  if (name.includes('hibur') || name.includes('nonton') || name.includes('game') || name.includes('libur') || name.includes('wisata') || name.includes('hobi')) return '🎮';
+  if (name.includes('sehat') || name.includes('obat') || name.includes('dokter') || name.includes('rs') || name.includes('medis') || name.includes('klinik') || name.includes('apotek')) return '💊';
+  if (name.includes('didik') || name.includes('sekolah') || name.includes('kuliah') || name.includes('buku') || name.includes('kursus')) return '🎓';
+  if (name.includes('keluarga') || name.includes('donasi') || name.includes('amal') || name.includes('sedekah') || name.includes('zakat')) return '🤲';
+  if (name.includes('invest') || name.includes('saham') || name.includes('reksadana') || name.includes('kripto') || name.includes('crypto')) return '📈';
+  if (name.includes('gaji') || name.includes('salary') || name.includes('upah')) return '💼';
+  if (name.includes('bonus') || name.includes('thr') || name.includes('insentif')) return '🎁';
+  if (name.includes('freelance') || name.includes('proyek') || name.includes('usaha') || name.includes('jualan')) return '💻';
+  if (name.includes('dividen') || name.includes('bunga') || name.includes('profit')) return '🪙';
+  if (name.includes('hadiah') || name.includes('saku') || name.includes('angpao')) return '🎉';
+  if (name.includes('refund') || name.includes('kembali')) return '🔄';
+  if (name.includes('hutang') || name.includes('utang') || name.includes('cicilan') || name.includes('pinjam')) return '🤝';
+  if (name.includes('piutang')) return '💰';
+  if (name.includes('transfer')) return '🔁';
+  return type === 'income' ? '📈' : '📉';
+};
+
+export const getWalletTypeEmoji = (type: string): string => {
+  switch (type) {
+    case 'cash': return '💵';
+    case 'bank': return '🏦';
+    case 'ewallet': return '📱';
+    case 'saving': return '📈';
+    case 'other': return '💳';
+    default: return '👛';
+  }
+};
+

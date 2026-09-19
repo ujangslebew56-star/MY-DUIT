@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { db, collection, query, where, onSnapshot, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Transaction } from '../../types';
-import { formatCurrency, formatDateIndo, formatFullDateIndo } from '../../lib/constants';
+import { formatCurrency, formatDateIndo, formatFullDateIndo, getCategoryEmoji } from '../../lib/constants';
 import { 
   FileText, 
   Download, 
@@ -887,17 +887,13 @@ export const ReportsView: React.FC = () => {
                             >
                               <div className="flex items-center gap-2 min-w-0 pr-2">
                                 <div
-                                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-sm ${
                                     isExpense
-                                      ? 'bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400'
-                                      : 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
+                                      ? 'bg-rose-100 dark:bg-rose-950/50'
+                                      : 'bg-emerald-100 dark:bg-emerald-950/50'
                                   }`}
                                 >
-                                  {isExpense ? (
-                                    <ArrowDownRight className="w-3.5 h-3.5" />
-                                  ) : (
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
-                                  )}
+                                  {getCategoryEmoji(tx.categoryName, tx.type)}
                                 </div>
 
                                 <div className="min-w-0">

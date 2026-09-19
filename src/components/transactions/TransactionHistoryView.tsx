@@ -15,7 +15,7 @@ import {
   OperationType
 } from '../../lib/firebase';
 import { Transaction, Wallet } from '../../types';
-import { formatCurrency, formatDateIndo } from '../../lib/constants';
+import { formatCurrency, formatDateIndo, getCategoryEmoji } from '../../lib/constants';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { 
   ArrowDownRight, 
@@ -164,7 +164,7 @@ export const TransactionHistoryView: React.FC = () => {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Cari transaksi, kategori, atau catatan..."
+            placeholder="🔍 Cari transaksi, kategori, atau catatan..."
             className="w-full pl-10 pr-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white shadow-2xs"
           />
         </div>
@@ -172,21 +172,22 @@ export const TransactionHistoryView: React.FC = () => {
         {/* Filter Pills */}
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {[
-            { id: 'all', label: 'Semua' },
-            { id: 'expense', label: 'Pengeluaran' },
-            { id: 'income', label: 'Pemasukan' },
-            { id: 'transfer', label: 'Transfer' },
+            { id: 'all', label: 'Semua', emoji: '✨' },
+            { id: 'expense', label: 'Pengeluaran', emoji: '📉' },
+            { id: 'income', label: 'Pemasukan', emoji: '📈' },
+            { id: 'transfer', label: 'Transfer', emoji: '🔁' },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setTypeFilter(tab.id as any)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 typeFilter === tab.id
                   ? 'bg-emerald-600 text-white shadow-xs'
                   : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'
               }`}
             >
-              {tab.label}
+              <span>{tab.emoji}</span>
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -197,14 +198,14 @@ export const TransactionHistoryView: React.FC = () => {
         <div className="py-12 text-center text-xs text-slate-400">Memuat transaksi...</div>
       ) : filteredTransactions.length === 0 ? (
         <div className="py-12 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-center p-6 space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
-            <Receipt className="w-6 h-6" />
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto text-xl">
+            🍃
           </div>
           <h3 className="font-semibold text-slate-700 dark:text-slate-300 text-sm">
-            Belum Ada Transaksi
+            Belum Ada Transaksi Ditemukan
           </h3>
           <p className="text-xs text-slate-400 max-w-xs mx-auto">
-            Gunakan tombol (+) di menu bawah atau Scan Struk untuk mencatat pengeluaran pertama Anda.
+            Gunakan tombol (+) di menu bawah atau Scan Struk AI untuk mencatat pengeluaran pertama Anda.
           </p>
         </div>
       ) : (
@@ -212,6 +213,7 @@ export const TransactionHistoryView: React.FC = () => {
           {filteredTransactions.map((tx) => {
             const isExp = tx.type === 'expense';
             const isInc = tx.type === 'income';
+            const catEmoji = getCategoryEmoji(tx.categoryName, tx.type);
 
             return (
               <div
@@ -220,17 +222,15 @@ export const TransactionHistoryView: React.FC = () => {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-base shadow-2xs ${
                       isExp
-                        ? 'bg-rose-50 dark:bg-rose-950/50 text-rose-500'
+                        ? 'bg-rose-50 dark:bg-rose-950/50'
                         : isInc
-                        ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-500'
-                        : 'bg-blue-50 dark:bg-blue-950/50 text-blue-500'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/50'
+                        : 'bg-blue-50 dark:bg-blue-950/50'
                     }`}
                   >
-                    {isExp && <ArrowDownRight className="w-5 h-5" />}
-                    {isInc && <ArrowUpRight className="w-5 h-5" />}
-                    {!isExp && !isInc && <ArrowLeftRight className="w-5 h-5" />}
+                    {catEmoji}
                   </div>
 
                   <div className="min-w-0">

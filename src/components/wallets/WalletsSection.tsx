@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { db, collection, query, where, onSnapshot, addDoc, updateDoc, deleteDoc, doc, handleFirestoreError, OperationType } from '../../lib/firebase';
 import { Wallet, WalletType } from '../../types';
-import { formatCurrency, formatNumberWithDots, parseNumberFromDots } from '../../lib/constants';
+import { formatCurrency, formatNumberWithDots, parseNumberFromDots, getWalletTypeEmoji } from '../../lib/constants';
 import { ConfirmModal } from '../ui/ConfirmModal';
 import { 
   Wallet as WalletIcon, 
@@ -149,11 +149,12 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            Sumber Dana & Dompet
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <span>💳</span>
+            <span>Sumber Dana & Dompet</span>
           </h2>
           <span className="text-xs text-slate-400">
-            Total {wallets.length} dompet tersimpan
+            Total {wallets.length} dompet tersimpan 👛
           </span>
         </div>
         <button
@@ -163,7 +164,7 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
           className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Tambah</span>
+          <span>Tambah Dompet</span>
         </button>
       </div>
 
@@ -171,11 +172,12 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
         {wallets.map((wallet) => {
           const Icon = getWalletIcon(wallet.type);
+          const typeEmoji = getWalletTypeEmoji(wallet.type);
           return (
             <div
               key={wallet.id}
               onClick={() => onSelectWallet && onSelectWallet(wallet)}
-              className="min-w-[170px] sm:min-w-[190px] p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:shadow-md transition-all relative group cursor-pointer shrink-0 snap-start"
+              className="min-w-[175px] sm:min-w-[195px] p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:shadow-md transition-all relative group cursor-pointer shrink-0 snap-start"
             >
               <div className="flex items-center justify-between mb-2">
                 <div
@@ -184,33 +186,37 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
                 >
                   <Icon className="w-4 h-4" />
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Always visible on mobile, nicely styled buttons */}
+                <div className="flex items-center gap-1 opacity-100 transition-opacity">
                   <button
                     type="button"
                     onClick={(e) => handleOpenEdit(wallet, e)}
-                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    className="p-1.5 bg-slate-100 dark:bg-slate-800/90 hover:bg-blue-50 dark:hover:bg-blue-950/60 rounded-lg text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors shadow-2xs cursor-pointer active:scale-90"
                     title="Edit Dompet"
+                    aria-label="Edit Dompet"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     type="button"
                     onClick={(e) => handleDeletePrompt(wallet, e)}
-                    className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg text-slate-400 hover:text-rose-500 cursor-pointer"
+                    className="p-1.5 bg-rose-50 dark:bg-rose-950/70 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-lg text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors shadow-2xs cursor-pointer active:scale-90"
                     title="Hapus Dompet"
+                    aria-label="Hapus Dompet"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
-              <div className="font-semibold text-xs text-slate-700 dark:text-slate-200 truncate">
-                {wallet.name}
+              <div className="font-semibold text-xs text-slate-800 dark:text-slate-200 truncate flex items-center gap-1">
+                <span>{typeEmoji}</span>
+                <span className="truncate">{wallet.name}</span>
               </div>
               <div className="text-[11px] text-slate-400 truncate mb-1">
                 {wallet.accountNumber ? wallet.accountNumber : wallet.type.toUpperCase()}
               </div>
-              <div className="font-bold text-sm text-slate-900 dark:text-white">
+              <div className="font-bold text-sm text-slate-900 dark:text-white font-mono">
                 {formatCurrency(wallet.balance)}
               </div>
             </div>
@@ -226,7 +232,7 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
           <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
             <Plus className="w-4 h-4" />
           </div>
-          <span className="text-xs font-medium">Dompet Baru</span>
+          <span className="text-xs font-medium">Dompet Baru ✨</span>
         </button>
       </div>
 
@@ -235,8 +241,9 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
           <div className="w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">
-                {editingWallet ? 'Edit Dompet' : 'Tambah Dompet / Bank'}
+              <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base flex items-center gap-1.5">
+                <span>{editingWallet ? '✏️' : '💳'}</span>
+                <span>{editingWallet ? 'Edit Dompet' : 'Tambah Dompet / Bank'}</span>
               </h3>
               <button
                 type="button"
@@ -250,13 +257,13 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
             <form onSubmit={handleSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Nama Dompet / Bank
+                  🏷️ Nama Dompet / Bank
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Bank Mandiri, Dompet Tunai"
+                  placeholder="Contoh: Bank BCA, Dompet Tunai"
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
                   required
                 />
@@ -264,25 +271,25 @@ export const WalletsSection: React.FC<WalletsSectionProps> = ({ onSelectWallet }
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Jenis Sumber Dana
+                  🏦 Jenis Sumber Dana
                 </label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value as WalletType)}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
                 >
-                  <option value="cash">Tunai (Cash)</option>
-                  <option value="bank">Bank / Rekening</option>
-                  <option value="ewallet">E-Wallet (GoPay, OVO, Dana)</option>
-                  <option value="saving">Tabungan Khusus / Deposito</option>
-                  <option value="other">Lainnya</option>
+                  <option value="cash">💵 Tunai (Cash Fisik)</option>
+                  <option value="bank">🏦 Bank / Rekening (BCA, Mandiri, BRI, dll)</option>
+                  <option value="ewallet">📱 E-Wallet (GoPay, OVO, Dana, ShopeePay)</option>
+                  <option value="saving">📈 Tabungan Khusus / Deposito / Investasi</option>
+                  <option value="other">💳 Sumber Lainnya</option>
                 </select>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Saldo Saat Ini
+                    💰 Saldo Saat Ini
                   </label>
                   {balance && (
                     <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
