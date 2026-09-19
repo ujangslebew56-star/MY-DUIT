@@ -35,38 +35,26 @@ jobs:
           touch dist/.nojekyll
           cp dist/index.html dist/404.html
           
-          # Inject lightweight package.json and vercel.json into dist
-          # so Vercel can also deploy the gh-pages branch without ENOENT package.json error
-          cat << 'EOF' > dist/package.json
-          {
-            "name": "my-duit",
-            "version": "1.0.0",
-            "private": true,
-            "scripts": {
-              "build": "echo 'Static build ready'"
-            }
-          }
-          EOF
-
-          cat << 'EOF' > dist/vercel.json
-          {
-            "buildCommand": "echo 'Static build ready'",
-            "installCommand": "echo 'Dependencies ready'",
-            "outputDirectory": ".",
-            "cleanUrls": true,
-            "headers": [
-              {
-                "source": "/(.*)",
-                "headers": [
-                  { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate, max-age=0" }
-                ]
+          # Inject package.json, vercel.json, and mirror dist directory
+          # so Vercel can seamlessly deploy the gh-pages branch without any missing file errors
+          node -e "
+            const fs = require('fs');
+            fs.writeFileSync('dist/package.json', JSON.stringify({
+              name: 'my-duit-dist',
+              version: '1.0.0',
+              private: true,
+              scripts: {
+                build: 'mkdir -p dist && cp -r index.html 404.html assets favicon* icon* manifest* dist/ 2>/dev/null || true'
               }
-            ],
-            "rewrites": [
-              { "source": "/(.*)", "destination": "/index.html" }
-            ]
-          }
-          EOF
+            }, null, 2));
+
+            fs.writeFileSync('dist/vercel.json', JSON.stringify({
+              cleanUrls: true,
+              rewrites: [{ source: '/(.*)', destination: '/index.html' }]
+            }, null, 2));
+          "
+          mkdir -p dist/dist
+          cp -r dist/index.html dist/404.html dist/assets dist/dist/ 2>/dev/null || true
 
       # 1. Deploy otomatis ke branch gh-pages (Metode paling stabil & aman tanpa konfigurasi rumit)
       - name: Deploy to gh-pages branch
